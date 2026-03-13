@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Login - Distributed Student System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #0f1117, #1a2340);
+        }
+
+        .login-container {
+            width: 380px;
+            padding: 40px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(93, 173, 226, 0.25);
+            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            color: white;
+            animation: fadeIn .8s ease;
+        }
+
+        h2 {
+            color: #5dade2;
+            margin-bottom: 6px;
+            font-size: 22px
+        }
+
+        .sub {
+            font-size: 13px;
+            color: #8899aa;
+            margin-bottom: 28px
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 14px
+        }
+
+        label {
+            font-size: 11px;
+            color: #8899aa;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            display: block;
+            margin-bottom: 5px
+        }
+
+        input {
+            width: 100%;
+            padding: 11px 14px;
+            background: #0d1525;
+            border: 1px solid #2d3a50;
+            color: #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: .2s
+        }
+
+        input:focus {
+            border-color: #5dade2;
+            box-shadow: 0 0 0 3px rgba(93, 173, 226, 0.15)
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 8px;
+            background: linear-gradient(135deg, #1a6fa8, #2980b9);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: .3s;
+            letter-spacing: .5px;
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #2196f3, #3498db)
+        }
+
+        .error {
+            color: #e74c3c;
+            margin-top: 12px;
+            font-size: 13px;
+            background: rgba(192, 57, 43, 0.1);
+            border: 1px solid rgba(192, 57, 43, 0.3);
+            padding: 8px 12px;
+            border-radius: 7px;
+            display: none;
+        }
+
+        .hint {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #4a5568;
+            text-align: left;
+            line-height: 1.7
+        }
+
+        .hint b {
+            color: #8899aa
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-container">
+        <h2>⚡ Distributed Student System</h2>
+        <p class="sub">Sign in to continue</p>
+
+        <div class="form-group">
+            <label>Username</label>
+            <input id="username" placeholder="admin / faculty / student" onkeydown="if(event.key==='Enter')login()">
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <input id="password" type="password" placeholder="••••••••••" onkeydown="if(event.key==='Enter')login()">
+        </div>
+
+        <button onclick="login()">Login →</button>
+
+        <div id="error" class="error">Invalid username or password</div>
+
+        <div class="hint">
+            <b>Default accounts:</b><br>
+            admin / admin123 → ADMIN<br>
+            faculty / faculty123 → FACULTY<br>
+            student / student123 → STUDENT
+        </div>
+    </div>
+
+    <script>
+        async function login() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            document.getElementById('error').style.display = 'none';
+            if (!username || !password) return;
+            try {
+                const r = await fetch(window.location.origin + '/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                if (r.ok) {
+                    const data = await r.json();
+                    localStorage.setItem('authUser', JSON.stringify(data));
+                    localStorage.setItem('loggedIn', 'true');
+                    window.location = 'index.html';
+                } else {
+                    document.getElementById('error').style.display = 'block';
+                }
+            } catch (e) {
+                document.getElementById('error').textContent =
+                    'Cannot connect to server. Is Spring Boot running on port ' + window.location.port + '?';
+                document.getElementById('error').style.display = 'block';
+            }
+        }
+    </script>
+</body>
+
+</html>

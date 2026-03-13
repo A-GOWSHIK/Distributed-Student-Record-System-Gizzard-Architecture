@@ -1,0 +1,43 @@
+### Get All Students
+GET http://localhost:8081/students
+
+
+### Add Student
+POST http://localhost:8081/students
+Content-Type: application/json
+
+{
+"name": "Bharath",
+"email": "bharath@gmail.com",
+"course": "CSE"
+}
+
+
+### Add Another Student
+POST http://localhost:8081/students
+Content-Type: application/json
+
+{
+"name": "Sai",
+"email": "sai@gmail.com",
+"course": "IT"
+}
+
+
+### Get Student by ID
+GET http://localhost:8081/students/1
+
+
+### Update Student
+PUT http://localhost:8081/students/1
+Content-Type: application/json
+
+{
+"name": "Bharath Reddy",
+"email": "bharath@gmail.com",
+"course": "AI"
+}
+
+
+### Delete Student
+DELETE http://localhost:8081/students/2

@@ -1,0 +1,1329 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Prevent browser caching so updates are always reflected -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Distributed Student System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif
+        }
+
+        body {
+            background: #0f1117;
+            color: #e0e0e0;
+            min-height: 100vh
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1a1f35, #2c3e50);
+            padding: 16px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #3d5a80;
+            position: sticky;
+            top: 0;
+            z-index: 100
+        }
+
+        .header h1 {
+            font-size: 20px;
+            color: #5dade2;
+            letter-spacing: 1px
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 14px
+        }
+
+        .user-badge {
+            background: rgba(93, 173, 226, 0.15);
+            border: 1px solid #3d5a80;
+            border-radius: 20px;
+            padding: 5px 14px;
+            font-size: 13px;
+            color: #5dade2
+        }
+
+        .logoutBtn {
+            background: #c0392b;
+            color: #fff;
+            border: none;
+            padding: 7px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: .2s
+        }
+
+        .logoutBtn:hover {
+            background: #e74c3c
+        }
+
+        .tabs {
+            display: flex;
+            gap: 4px;
+            padding: 14px 28px 0;
+            background: #13172a;
+            border-bottom: 1px solid #1e2a3a;
+            flex-wrap: wrap
+        }
+
+        .tab {
+            padding: 9px 18px;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            font-size: 13px;
+            color: #8899aa;
+            border: 1px solid transparent;
+            border-bottom: none;
+            transition: .2s;
+            user-select: none
+        }
+
+        .tab:hover {
+            color: #5dade2;
+            background: rgba(93, 173, 226, 0.07)
+        }
+
+        .tab.active {
+            background: #1a2340;
+            color: #5dade2;
+            border-color: #3d5a80
+        }
+
+        .panel {
+            display: none;
+            padding: 24px 28px
+        }
+
+        .panel.active {
+            display: block
+        }
+
+        .card {
+            background: #1a2340;
+            border: 1px solid #1e2a3a;
+            border-radius: 12px;
+            padding: 22px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.3)
+        }
+
+        .card h2 {
+            color: #5dade2;
+            font-size: 16px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid #1e2a3a;
+            padding-bottom: 10px
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 16px;
+            margin-bottom: 22px
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #1e2a4a, #1a2340);
+            border: 1px solid #3d5a80;
+            border-radius: 12px;
+            padding: 18px;
+            text-align: center
+        }
+
+        .stat-card .num {
+            font-size: 32px;
+            font-weight: 700;
+            color: #5dade2
+        }
+
+        .stat-card .label {
+            font-size: 12px;
+            color: #8899aa;
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 1px
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 12px
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px
+        }
+
+        .form-group label {
+            font-size: 12px;
+            color: #8899aa;
+            text-transform: uppercase;
+            letter-spacing: .5px
+        }
+
+        input,
+        select {
+            background: #0f1117;
+            border: 1px solid #2d3a50;
+            color: #e0e0e0;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            width: 100%;
+            transition: .2s
+        }
+
+        input:focus,
+        select:focus {
+            border-color: #5dade2;
+            box-shadow: 0 0 0 3px rgba(93, 173, 226, 0.15)
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: .2s
+        }
+
+        .btn-primary {
+            background: #2980b9;
+            color: #fff
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: #fff;
+            margin-right: 6px
+        }
+
+        .btn-danger {
+            background: #c0392b;
+            color: #fff
+        }
+
+        .btn-warn {
+            background: #d08000;
+            color: #fff;
+            margin-right: 6px
+        }
+
+        .btn-info {
+            background: #1a6fa8;
+            color: #fff;
+            margin-right: 6px
+        }
+
+        .btn-sm {
+            padding: 5px 12px;
+            font-size: 12px
+        }
+
+        .table-wrapper {
+            overflow-x: auto
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px
+        }
+
+        thead tr {
+            background: #0d1525
+        }
+
+        th {
+            padding: 11px 14px;
+            text-align: left;
+            color: #5dade2;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: .7px;
+            border-bottom: 1px solid #2d3a50
+        }
+
+        td {
+            padding: 11px 14px;
+            border-bottom: 1px solid #1a2340;
+            color: #ccd6e0
+        }
+
+        tr:hover td {
+            background: rgba(93, 173, 226, 0.05)
+        }
+
+        #notify,
+        #errorNotify {
+            display: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin-top: 12px;
+            font-size: 13px
+        }
+
+        #notify {
+            background: rgba(39, 174, 96, 0.15);
+            border: 1px solid #27ae60;
+            color: #2ecc71
+        }
+
+        #errorNotify {
+            background: rgba(192, 57, 43, 0.15);
+            border: 1px solid #c0392b;
+            color: #e74c3c
+        }
+
+        .search-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+            flex-wrap: wrap
+        }
+
+        .search-row input {
+            max-width: 280px
+        }
+
+        .pag-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-top: 14px;
+            flex-wrap: wrap
+        }
+
+        .log-entry {
+            background: #0d1525;
+            border: 1px solid #1e2a3a;
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-bottom: 8px;
+            font-size: 13px
+        }
+
+        .log-ts {
+            color: #4a5568;
+            font-size: 11px
+        }
+
+        .log-event {
+            color: #e0e0e0;
+            margin-top: 2px
+        }
+
+        .log-node {
+            color: #5dade2;
+            font-size: 11px
+        }
+
+        pre.json-view {
+            background: #0d1525;
+            border: 1px solid #1e2a3a;
+            border-radius: 10px;
+            padding: 18px;
+            font-size: 13px;
+            color: #a8d8a8;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            line-height: 1.6
+        }
+
+        .node-grid {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-top: 10px
+        }
+
+        .node-box {
+            background: #0d1525;
+            border: 1px solid #2d3a50;
+            border-radius: 10px;
+            padding: 18px;
+            min-width: 180px;
+            text-align: center;
+            transition: .3s
+        }
+
+        .node-box.leader {
+            border-color: #5dade2;
+            box-shadow: 0 0 16px rgba(93, 173, 226, 0.3)
+        }
+
+        .node-box.failed {
+            border-color: #e74c3c;
+            opacity: 0.7
+        }
+
+        .node-name {
+            font-weight: 700;
+            color: #e0e0e0;
+            margin-bottom: 6px
+        }
+
+        .green {
+            color: #2ecc71
+        }
+
+        .red {
+            color: #e74c3c
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <h1>⚡ Distributed Student System</h1>
+        <div class="header-right">
+            <span class="user-badge" id="headerUser">👤 Guest</span>
+            <button class="logoutBtn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" id="nav-dashboard" onclick="showTab('tab-dashboard')">📊 Dashboard</div>
+        <div class="tab" id="nav-students" onclick="showTab('tab-students')">🎓 Students</div>
+        <div class="tab" id="nav-courses" onclick="showTab('tab-courses')">📚 Courses</div>
+        <div class="tab" id="nav-enrollment" onclick="showTab('tab-enrollment')">📝 Enrollment</div>
+        <div class="tab" id="nav-attendance" onclick="showTab('tab-attendance')">✅ Attendance</div>
+        <div class="tab" id="nav-grades" onclick="showTab('tab-grades')">🏆 Grades</div>
+        <div class="tab" id="nav-logs" onclick="showTab('tab-logs')">📋 System Logs</div>
+        <div class="tab" id="nav-cluster" onclick="showTab('tab-cluster')">🌐 Cluster Monitor</div>
+        <div class="tab" id="nav-health" onclick="showTab('tab-health')">❤️ Health Monitor</div>
+    </div>
+
+    <div id="tab-dashboard" class="panel active">
+        <div class="stats-grid" id="dashboardStatsGrid">
+            <div class="stat-card">
+                <div class="num" id="ds-students">-</div>
+                <div class="label">Students</div>
+            </div>
+            <div class="stat-card">
+                <div class="num" id="ds-courses">-</div>
+                <div class="label">Courses</div>
+            </div>
+            <div class="stat-card" id="card-nodes">
+                <div class="num" id="ds-nodes">-</div>
+                <div class="label">Active Nodes</div>
+            </div>
+            <div class="stat-card" id="card-replicas">
+                <div class="num" id="ds-replicas">-</div>
+                <div class="label">Replicas</div>
+            </div>
+        </div>
+        <div class="card" id="dashboardSystemStatusCard">
+            <h2>System Status</h2>
+            <div id="dashStatus">Loading…</div>
+        </div>
+        <div class="card" id="dashboardStudentProfile" style="display:none">
+            <h2 id="studentWelcome">Welcome</h2>
+            <div class="stats-grid" style="margin-bottom: 0;">
+                <div class="stat-card">
+                    <div class="num" id="sd-courses">-</div>
+                    <div class="label">Courses Enrolled</div>
+                </div>
+                <div class="stat-card">
+                    <div class="num" id="sd-attendance">-</div>
+                    <div class="label">Attendance</div>
+                </div>
+            </div>
+            <div
+                style="margin-top:20px; padding:15px; background:rgba(93,173,226,0.1); border-left:4px solid #5dade2; font-style:italic; border-radius: 4px;">
+                <strong style="color:#5dade2; font-size: 14px;">Quote of the Day:</strong>
+                <p id="sd-quote" style="margin-top:5px; font-size: 15px;">Loading...</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-students" class="panel">
+        <div class="card" id="addStudentForm">
+            <h2>Add / Update Student</h2>
+            <div class="form-row">
+                <input id="sid" type="hidden">
+                <div class="form-group"><label>Student ID <span style="color:#e74c3c">*</span></label><input
+                        id="sStudentId" type="number" placeholder="e.g. 6 → Node1, 5 → Node2" min="1"></div>
+                <div class="form-group"><label>Name</label><input id="sname" placeholder="Full Name"></div>
+                <div class="form-group"><label>Email</label><input id="semail" placeholder="email@test.com"></div>
+                <div class="form-group"><label>Course</label><input id="scourse" placeholder="CSE"></div>
+                <div class="form-group"><label>Password</label><input id="spassword" type="password"
+                        placeholder="password123"></div>
+            </div>
+            <button class="btn btn-success" onclick="saveStudent()">Save Student</button>
+        </div>
+        <div class="card" id="studentListSection">
+            <!-- Shard View Tabs -->
+            <div id="shardTabBar" style="display:flex;gap:8px;margin-bottom:16px;align-items:center;flex-wrap:wrap">
+                <h2 style="margin:0;flex:1">Student List</h2>
+                <button id="tabCluster" class="btn btn-info btn-sm" onclick="switchShardTab('cluster')"
+                    style="background:#3498db">🌐 Cluster View</button>
+                <button id="tabShard1" class="btn btn-sm" onclick="switchShardTab('shard1')"
+                    style="background:#2ecc71;color:#fff">🟢 Shard 1 (Node1)</button>
+                <button id="tabShard2" class="btn btn-sm" onclick="switchShardTab('shard2')"
+                    style="background:#e67e22;color:#fff">🟠 Shard 2 (Node2)</button>
+                <button id="tabShard3" class="btn btn-sm" onclick="switchShardTab('shard3')"
+                    style="background:#8e44ad;color:#fff">🟣 Shard 3 (Node3)</button>
+            </div>
+            <div id="shardTabLabel" style="font-size:12px;color:#aaa;margin-bottom:8px">🌐 Showing: All nodes (Cluster)
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Course</th>
+                            <th id="th-actions">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentTable"></tbody>
+                </table>
+            </div>
+            <div class="pag-row">
+                <button class="btn btn-info btn-sm" onclick="changePage(-1)">◀ Prev</button>
+                <span id="pageInfo">Page 0</span>
+                <button class="btn btn-info btn-sm" onclick="changePage(1)">Next ▶</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-courses" class="panel">
+        <div class="card" id="addCourseForm">
+            <h2>Add Course</h2>
+            <div class="form-row">
+                <div class="form-group"><label>Name</label><input id="cname"></div>
+                <div class="form-group"><label>Instructor</label><input id="cinstructor"></div>
+                <div class="form-group"><label>Credits</label><input id="ccredits" type="number"></div>
+            </div>
+            <button class="btn btn-success" onclick="addCourse()">Add Course</button>
+        </div>
+        <div class="card">
+            <h2 id="courseListHeader">Course List</h2>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Instructor</th>
+                            <th>Credits</th>
+                        </tr>
+                    </thead>
+                    <tbody id="courseTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-enrollment" class="panel">
+        <div class="card" id="requestEnrollmentForm">
+            <h2>Enrollment Management</h2>
+            <div class="form-row">
+                <div class="form-group" id="fg-enSid"><label>Student ID</label><select id="enSid"></select></div>
+                <div class="form-group" id="fg-enCid"><label>Course ID</label><select id="enCid"></select></div>
+            </div>
+            <button class="btn btn-success" id="enrollBtn" onclick="adminEnroll()">Grant Enrollment</button>
+        </div>
+        <div class="card" id="enrollmentRequestsForm">
+            <h2>Enrollment Requests</h2>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Student</th>
+                            <th>Course</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="enrollTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-attendance" class="panel">
+        <div class="card" id="recordAttendanceForm">
+            <h2>Record Attendance</h2>
+            <div class="form-row">
+                <div class="form-group"><label>Student ID</label><select id="attSid"></select></div>
+                <div class="form-group"><label>Course ID</label><select id="attCid"></select></div>
+                <div class="form-group"><label>Date</label><input id="attDate" type="date"></div>
+                <div class="form-group"><label>Status</label><select id="attStatus">
+                        <option value="PRESENT">PRESENT</option>
+                        <option value="ABSENT">ABSENT</option>
+                    </select></div>
+            </div>
+            <button class="btn btn-success" onclick="recordAttendance()">Submit</button>
+        </div>
+        <div class="card">
+            <h2 id="attendanceHeader">View Attendance</h2>
+            <div class="table-wrapper">
+                <table id="attendanceTableEl">
+                    <thead id="attendanceTableHead">
+                        <tr>
+                            <th>ID</th>
+                            <th>Student</th>
+                            <th>Course</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendanceTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-grades" class="panel">
+        <div class="card" id="assignGradeForm">
+            <h2>Assign Grade</h2>
+            <div class="form-row">
+                <div class="form-group"><label>Student ID</label><select id="grSid"></select></div>
+                <div class="form-group"><label>Course ID</label><select id="grCid"></select></div>
+                <div class="form-group"><label>Marks</label><input id="grMarks" type="number"></div>
+            </div>
+            <button class="btn btn-success" onclick="assignGrade()">Submit Grade</button>
+        </div>
+        <div class="card">
+            <h2 id="gradesHeader">View Grades</h2>
+            <div class="table-wrapper">
+                <table id="gradesTableEl">
+                    <thead id="gradesTableHead">
+                        <tr>
+                            <th>ID</th>
+                            <th>Student</th>
+                            <th>Course</th>
+                            <th>Marks</th>
+                            <th>Grade</th>
+                        </tr>
+                    </thead>
+                    <tbody id="gradesTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-logs" class="panel">
+        <div class="card">
+            <h2>System Logs</h2>
+            <div id="logsContainer"></div>
+        </div>
+    </div>
+
+    <div id="tab-cluster" class="panel">
+        <!-- Leader Election Card -->
+        <div class="card">
+            <h2>🏆 Distributed Algorithms Monitor</h2>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px">
+                <div
+                    style="background:#1a2a1a;border:1px solid #2ecc71;border-radius:8px;padding:16px;text-align:center">
+                    <div style="color:#2ecc71;font-size:12px;text-transform:uppercase;letter-spacing:1px">Leader (Bully)
+                    </div>
+                    <div id="leaderDisplay" style="color:#fff;font-size:20px;font-weight:bold;margin-top:8px">—</div>
+                </div>
+                <div
+                    style="background:#1a1a2a;border:1px solid #3498db;border-radius:8px;padding:16px;text-align:center">
+                    <div style="color:#3498db;font-size:12px;text-transform:uppercase;letter-spacing:1px">Lamport Clock
+                    </div>
+                    <div id="lamportDisplay" style="color:#fff;font-size:20px;font-weight:bold;margin-top:8px">—</div>
+                </div>
+                <div
+                    style="background:#1a1a1a;border:1px solid #8e44ad;border-radius:8px;padding:16px;text-align:center">
+                    <div style="color:#8e44ad;font-size:12px;text-transform:uppercase;letter-spacing:1px">Recovery
+                        Status</div>
+                    <div id="recoveryDisplay" style="color:#fff;font-size:11px;margin-top:8px">—</div>
+                </div>
+            </div>
+
+            <!-- Node Status Row -->
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px">
+                <div style="background:#111;border-radius:8px;padding:12px;text-align:center">
+                    <div style="color:#2ecc71;font-weight:bold">🟢 Node1 (ANBARASAN)</div>
+                    <div style="color:#aaa;font-size:11px">:8081 — shard0 (id%3==0)</div>
+                    <div style="color:#2ecc71;font-size:11px;margin-top:4px">ALWAYS UP (local)</div>
+                </div>
+                <div style="background:#111;border-radius:8px;padding:12px;text-align:center">
+                    <div style="color:#e67e22;font-weight:bold">🟠 Node2 (CHARA)</div>
+                    <div style="color:#aaa;font-size:11px">:8082 — shard1 (id%3==1)</div>
+                    <div id="node2Status" style="font-size:11px;margin-top:4px">checking...</div>
+                </div>
+                <div style="background:#111;border-radius:8px;padding:12px;text-align:center">
+                    <div style="color:#8e44ad;font-weight:bold">🟣 Node3 (NSNSReddy)</div>
+                    <div style="color:#aaa;font-size:11px">:8083 — shard2 (id%3==2)</div>
+                    <div id="node3Status" style="font-size:11px;margin-top:4px">checking...</div>
+                </div>
+            </div>
+
+            <!-- Snapshot Controls -->
+            <div style="background:#111;border-radius:8px;padding:16px;margin-bottom:20px">
+                <h3 style="margin:0 0 12px;color:#3498db">📸 Chandy-Lamport Snapshot</h3>
+                <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+                    <button class="btn btn-info btn-sm" onclick="triggerSnapshot()">▶ Start Global Snapshot</button>
+                    <button class="btn btn-sm" style="background:#555" onclick="viewSnapshot()">👁 View Snapshot
+                        State</button>
+                    <span id="snapshotStatus" style="color:#aaa;font-size:12px"></span>
+                </div>
+                <pre id="snapshotDisplay"
+                    style="background:#0a0a0a;border-radius:6px;padding:12px;margin-top:12px;color:#2ecc71;font-size:12px;display:none"></pre>
+            </div>
+
+            <!-- Distributed Lock Status -->
+            <div style="background:#111;border-radius:8px;padding:16px;margin-bottom:20px">
+                <h3 style="margin:0 0 12px;color:#e67e22">🔒 Distributed Lock (Token-Based)</h3>
+                <div id="lockStatus" style="color:#aaa;font-size:13px">Loading...</div>
+                <div style="display:flex;gap:8px;margin-top:12px">
+                    <button class="btn btn-sm" style="background:#2ecc71" onclick="acquireLock()">Acquire Lock</button>
+                    <button class="btn btn-sm" style="background:#e74c3c" onclick="releaseLock()">Release Lock</button>
+                </div>
+            </div>
+
+            <!-- Ring Replication Chain -->
+            <div style="background:#111;border-radius:8px;padding:16px">
+                <h3 style="margin:0 0 8px;color:#2ecc71">🔄 Ring Replication Chain</h3>
+                <div style="color:#aaa;font-size:13px;font-family:monospace">
+                    Node1 → Node2 → Node3 → Node1 (circular)<br>
+                    shard0→N2 | shard1→N3 | shard2→N1
+                </div>
+            </div>
+        </div>
+        <div id="clusterNodes" class="node-grid" style="display:none"></div>
+        <pre id="clusterJson" class="json-view" style="display:none"></pre>
+    </div>
+
+    <div id="tab-health" class="panel">
+        <div class="card">
+            <h2>Node Health Monitor</h2>
+            <p style="margin-bottom:15px; font-size:13px; color:#8899aa">Nodes sending heartbeats. Failure detected if
+                heartbeat > 10s.</p>
+            <div id="healthNodes" class="node-grid"></div>
+        </div>
+        <div class="card" id="simulationControls">
+            <h2>Simulation Controls</h2>
+            <div class="form-row">
+                <div class="form-group"><label>Node ID</label><input id="failNodeId" placeholder="Node1, Node2...">
+                </div>
+            </div>
+            <button class="btn btn-danger" onclick="simulateFail()">Simulate Heartbeat Loss</button>
+            <button class="btn btn-info" onclick="sendHeartbeat()">Send Manual Heartbeat</button>
+        </div>
+    </div>
+
+    <script>
+        const BASE = window.location.origin;
+        let currentPage = 0;
+        let currentUser = null;
+
+        function applyRBAC() {
+            if (!currentUser) return;
+            const role = currentUser.role;
+
+            if (role === 'FACULTY') {
+                document.getElementById('nav-logs').style.display = 'none';
+                document.getElementById('addStudentForm').style.display = 'none';
+                document.getElementById('th-actions').innerText = '-';
+                document.getElementById('nav-cluster').style.display = 'none';
+                document.getElementById('nav-health').style.display = 'none';
+                document.getElementById('card-nodes').style.display = 'none';
+                document.getElementById('card-replicas').style.display = 'none';
+                document.getElementById('dashboardSystemStatusCard').style.display = 'none';
+                // Hide shard debugging tabs — faculty sees unified list only
+                const shardTabBar = document.getElementById('shardTabBar');
+                if (shardTabBar) shardTabBar.style.display = 'none';
+                const shardTabLabel = document.getElementById('shardTabLabel');
+                if (shardTabLabel) shardTabLabel.style.display = 'none';
+            }
+            else if (role === 'STUDENT') {
+                document.getElementById('nav-students').style.display = 'none';
+                document.getElementById('nav-logs').style.display = 'none';
+                document.getElementById('nav-cluster').style.display = 'none';
+                document.getElementById('nav-health').style.display = 'none';
+
+                document.getElementById('nav-courses').innerText = '📚 My Courses';
+                document.getElementById('nav-attendance').innerText = '✅ My Attendance';
+                document.getElementById('nav-grades').innerText = '🏆 My Grades';
+
+                document.getElementById('addCourseForm').style.display = 'none';
+                document.getElementById('recordAttendanceForm').style.display = 'none';
+                document.getElementById('assignGradeForm').style.display = 'none';
+
+                document.getElementById('dashboardStatsGrid').style.display = 'none';
+                document.getElementById('dashboardSystemStatusCard').style.display = 'none';
+                document.getElementById('dashboardStudentProfile').style.display = 'block';
+
+                document.getElementById('enrollmentRequestsForm').style.display = 'none';
+                document.getElementById('fg-enSid').style.display = 'none';
+                const eb = document.getElementById('enrollBtn');
+                eb.innerText = 'Request Enrollment';
+                eb.onclick = studentRequestEnrollment;
+            }
+        }
+
+        function showTab(id) {
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            event.currentTarget.classList.add('active');
+
+            if (id === 'tab-dashboard') loadDashboard();
+            if (id === 'tab-students') {
+                // Faculty gets cluster (all-node) view; Admin gets shard tab controls
+                if (currentUser && currentUser.role !== 'ADMIN') {
+                    loadClusterStudents();
+                } else {
+                    loadStudents();
+                }
+            }
+            if (id === 'tab-courses') loadCourses();
+            if (id === 'tab-enrollment') loadEnrollments();
+            if (id === 'tab-logs') loadLogs();
+            if (id === 'tab-cluster') loadCluster();
+            if (id === 'tab-health') loadHealth();
+            if (id === 'tab-attendance') loadAttendance();
+            if (id === 'tab-grades') loadGrades();
+        }
+
+        function logout() { localStorage.clear(); window.location = 'login.html'; }
+
+        async function fetchApi(url, method = 'GET', body = null) {
+            const opt = { method, headers: { 'Content-Type': 'application/json' } };
+            if (currentUser && currentUser.role) {
+                opt.headers['Authorization'] = 'Bearer ' + currentUser.role;
+                opt.headers['X-User-Email'] = currentUser.username;
+            }
+            if (body) opt.body = JSON.stringify(body);
+            try {
+                const r = await fetch(BASE + url, opt);
+                if (r.status === 403) {
+                    alert("403 Forbidden: You do not have permission for this action.");
+                    return null;
+                }
+                if (!r.ok) {
+                    const text = await r.text();
+                    console.error(`API error ${r.status} for ${method} ${url}:`, text);
+                    return null;
+                }
+                // Handle empty responses (e.g. 204 No Content)
+                const contentType = r.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    return { ok: true };
+                }
+                return await r.json();
+            } catch (err) {
+                console.error(`Network error for ${method} ${url}:`, err);
+                return null;
+            }
+        }
+
+        async function loadProfile() {
+            if (!currentUser) return;
+            try {
+                const p = await fetchApi('/students/me');
+                if (p) {
+                    console.log("Loaded raw student profile if needed.");
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        // Students
+        async function loadStudents() {
+            if (currentUser.role === 'STUDENT') return;
+            const data = await fetchApi(`/students?page=${currentPage}&size=5`);
+            const tbody = document.getElementById('studentTable');
+            tbody.innerHTML = '';
+            if (!data || !data.content) return;
+            const isAdmin = currentUser.role === 'ADMIN';
+
+            data.content.forEach(s => {
+                let actionHtml = isAdmin ? `<td><button class="btn btn-danger btn-sm" onclick="deleteStudent(${s.id})">Delete</button></td>` : '<td>-</td>';
+                tbody.innerHTML += `<tr><td>${s.id}</td><td>${s.name}</td><td>${s.email}</td><td>${s.course}</td>${actionHtml}</tr>`;
+            });
+            document.getElementById('pageInfo').innerText = `Page ${currentPage}`;
+        }
+        function changePage(delta) { currentPage = Math.max(0, currentPage + delta); loadStudents(); }
+
+        // ─── Shard Tab Switching (3-node cluster) ────────────────────────────────────
+        let activeShardTab = 'cluster';
+        function switchShardTab(tab) {
+            activeShardTab = tab;
+            const labels = {
+                cluster: '🌐 Showing: All nodes (Cluster)',
+                shard1: '🟢 Showing: Shard 1 — Node1 only (id%3==0)',
+                shard2: '🟠 Showing: Shard 2 — Node2 only (id%3==1)',
+                shard3: '🟣 Showing: Shard 3 — Node3 only (id%3==2)'
+            };
+            document.getElementById('shardTabLabel').innerText = labels[tab] || '';
+            if (tab === 'cluster') loadClusterStudents();
+            else if (tab === 'shard1') loadShard1();
+            else if (tab === 'shard2') loadShard2();
+            else loadShard3();
+        }
+
+        async function loadClusterStudents() {
+            const data = await fetchApi('/cluster/students');
+            renderShardTable(Array.isArray(data) ? data : []);
+        }
+        async function loadShard1() {
+            const data = await fetchApi('/shard/node1');
+            renderShardTable(Array.isArray(data) ? data : []);
+        }
+        async function loadShard2() {
+            const data = await fetchApi('/shard/node2');
+            renderShardTable(Array.isArray(data) ? data : []);
+        }
+        async function loadShard3() {
+            const data = await fetchApi('/shard/node3');
+            renderShardTable(Array.isArray(data) ? data : []);
+        }
+        function nodeLabel(id) {
+            const m = id % 3;
+            if (m === 0) return '🟢N1';
+            if (m === 1) return '🟠N2';
+            return '🟣N3';
+        }
+        function renderShardTable(list) {
+            const tbody = document.getElementById('studentTable');
+            const isAdmin = currentUser && currentUser.role === 'ADMIN';
+            tbody.innerHTML = '';
+            list.forEach(s => {
+                const node = nodeLabel(s.id);
+                let del = isAdmin ? `<td>${node} <button class="btn btn-danger btn-sm" onclick="deleteStudent(${s.id})">Delete</button></td>` : `<td>${node}</td>`;
+                tbody.innerHTML += `<tr><td>${s.id}</td><td>${s.name || ''}</td><td>${s.email || ''}</td><td>${s.course || ''}</td>${del}</tr>`;
+            });
+            document.getElementById('pageInfo').innerText = `${list.length} record(s)`;
+        }
+        // ────────────────────────────────────────────────────────────────
+
+        async function saveStudent() {
+            const idVal = document.getElementById('sStudentId').value;
+            const s = {
+                id: idVal ? parseInt(idVal) : undefined,
+                name: document.getElementById('sname').value,
+                email: document.getElementById('semail').value,
+                course: document.getElementById('scourse').value,
+                password: document.getElementById('spassword').value
+            };
+            if (!s.id) { alert('Please enter a Student ID for shard routing.'); return; }
+            await fetchApi('/students', 'POST', s);
+            switchShardTab(activeShardTab);
+        }
+        async function deleteStudent(id) {
+            await fetchApi('/students/' + id, 'DELETE');
+            switchShardTab(activeShardTab);
+        }
+
+        // Courses
+        async function loadCourses() {
+            const tbody = document.getElementById('courseTable');
+            tbody.innerHTML = '';
+            if (currentUser.role === 'STUDENT') {
+                const data = await fetchApi(`/students/my-courses`);
+                if (!data) return;
+                data.forEach(c => {
+                    tbody.innerHTML += `<tr><td>${c.id}</td><td>${c.courseName}</td><td>${c.instructor}</td><td>${c.credits}</td></tr>`;
+                });
+            } else {
+                const data = await fetchApi('/courses');
+                if (!data) return;
+                data.forEach(c => {
+                    tbody.innerHTML += `<tr><td>${c.id}</td><td>${c.courseName}</td><td>${c.instructor}</td><td>${c.credits}</td></tr>`;
+                });
+            }
+        }
+        async function addCourse() {
+            const c = { courseName: document.getElementById('cname').value, instructor: document.getElementById('cinstructor').value, credits: document.getElementById('ccredits').value };
+            await fetchApi('/courses', 'POST', c); loadCourses();
+        }
+
+        // Enrollment
+        async function adminEnroll() {
+            await fetchApi('/enrollment/admin-enroll', 'POST', { studentId: document.getElementById('enSid').value, courseId: document.getElementById('enCid').value });
+            alert('Enrollment Granted');
+        }
+
+        async function studentRequestEnrollment() {
+            await fetchApi('/enrollment/student-request', 'POST', { courseId: document.getElementById('enCid').value });
+            alert('Enrollment Requested');
+        }
+
+        async function loadEnrollments() {
+            if (currentUser.role === 'ADMIN') {
+                const data = await fetchApi('/enrollment/admin-requests');
+                const tbody = document.getElementById('enrollTable');
+                if (!tbody) return;
+                tbody.innerHTML = '';
+                if (data) data.forEach(e => {
+                    tbody.innerHTML += `<tr>
+                        <td>${e.id}</td>
+                        <td>${e.student.name}</td>
+                        <td>${e.course.courseName}</td>
+                        <td>${e.status}</td>
+                        <td>
+                            <button class="btn btn-info btn-sm" onclick="approveEnrollment(${e.id})">Approve</button>
+                            <button class="btn btn-danger btn-sm" onclick="rejectEnrollment(${e.id})">Reject</button>
+                        </td>
+                    </tr>`;
+                });
+            }
+        }
+
+        async function approveEnrollment(id) {
+            await fetchApi('/enrollment/admin-approve', 'POST', { enrollmentId: id });
+            loadEnrollments();
+        }
+
+        async function rejectEnrollment(id) {
+            await fetchApi('/enrollment/admin-reject', 'POST', { enrollmentId: id });
+            loadEnrollments();
+        }
+
+        // ── Attendance ──────────────────────────────────────────────────────
+        async function loadAttendance() {
+            const tbody = document.getElementById('attendanceTable');
+            const thead = document.getElementById('attendanceTableHead');
+            tbody.innerHTML = '';
+
+            if (currentUser.role === 'STUDENT') {
+                // Student: slim 3-column view
+                thead.innerHTML = '<tr><th>Course</th><th>Present / Total</th><th>Attendance %</th></tr>';
+                const data = await fetchApi('/students/my-attendance');
+                if (!data) return;
+                data.forEach(a => {
+                    tbody.innerHTML += `<tr><td>${a.course}</td><td>${a.present} / ${a.total}</td><td>${a.percentage}%</td></tr>`;
+                });
+            } else {
+                // Faculty / Admin: 6-column view with Attendance %
+                thead.innerHTML = '<tr><th>ID</th><th>Student</th><th>Course</th><th>Date</th><th>Status</th><th>Attendance %</th></tr>';
+
+                // Fetch raw records + summary in parallel
+                const [records, summary] = await Promise.all([
+                    fetchApi('/attendance/all'),
+                    fetchApi('/attendance/summary')
+                ]);
+                if (!records) return;
+
+                // Build a lookup: "studentName|courseName" → percentage
+                const pctMap = {};
+                if (summary) summary.forEach(s => {
+                    pctMap[`${s.studentName}|${s.courseName}`] = s.percentage;
+                });
+
+                records.forEach(a => {
+                    const sName = a.student ? a.student.name : '-';
+                    const cName = a.course ? a.course.courseName : '-';
+                    const pct = pctMap[`${sName}|${cName}`];
+                    const pctStr = pct !== undefined ? pct + '%' : '-';
+                    tbody.innerHTML += `<tr>
+                        <td>${a.id}</td><td>${sName}</td><td>${cName}</td>
+                        <td>${a.date}</td><td>${a.status}</td><td>${pctStr}</td>
+                    </tr>`;
+                });
+            }
+        }
+
+        async function recordAttendance() {
+            const res = await fetchApi('/attendance', 'POST', {
+                studentId: document.getElementById('attSid').value,
+                courseId: document.getElementById('attCid').value,
+                date: document.getElementById('attDate').value,
+                status: document.getElementById('attStatus').value
+            });
+            if (res) {
+                alert('Attendance recorded successfully');
+                loadAttendance(); // auto-reload table
+            } else {
+                alert('Failed to record attendance.');
+            }
+        }
+
+        // ── Grades ──────────────────────────────────────────────────────────
+        async function loadGrades() {
+            const tbody = document.getElementById('gradesTable');
+            const thead = document.getElementById('gradesTableHead');
+            tbody.innerHTML = '';
+
+            if (currentUser.role === 'STUDENT') {
+                // Student: slim 3-column view (Course | Marks | Grade)
+                thead.innerHTML = '<tr><th>Course</th><th>Marks</th><th>Grade</th></tr>';
+                const data = await fetchApi('/students/my-grades');
+                if (!data) return;
+                data.forEach(g => {
+                    tbody.innerHTML += `<tr><td>${g.course}</td><td>${g.marks}</td><td>${g.grade}</td></tr>`;
+                });
+            } else {
+                // Faculty / Admin: full view with Edit & Delete actions
+                thead.innerHTML = '<tr><th>ID</th><th>Student</th><th>Course</th><th>Marks</th><th>Grade</th><th>Actions</th></tr>';
+                const data = await fetchApi('/grades/all');
+                if (!data) return;
+                data.forEach(g => {
+                    const sName = g.student ? g.student.name : '-';
+                    const cName = g.course ? g.course.courseName : '-';
+                    tbody.innerHTML += `<tr>
+                        <td>${g.id}</td><td>${sName}</td><td>${cName}</td>
+                        <td>${g.marks}</td><td>${g.grade}</td>
+                        <td>
+                            <button class="btn btn-warn btn-sm" onclick="editGrade(${g.id}, ${g.marks})">Edit</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteGrade(${g.id})">Delete</button>
+                        </td>
+                    </tr>`;
+                });
+            }
+        }
+
+        async function editGrade(id, currentMarks) {
+            const input = prompt(`Edit marks for grade #${id}\nCurrent marks: ${currentMarks}\nEnter new marks:`, currentMarks);
+            if (input === null || input.trim() === '') return; // cancelled
+            const newMarks = parseFloat(input);
+            if (isNaN(newMarks) || newMarks < 0 || newMarks > 100) {
+                alert('Please enter a valid marks value between 0 and 100.');
+                return;
+            }
+            const res = await fetchApi(`/grades/${id}`, 'PUT', { marks: newMarks });
+            if (res) {
+                alert(res.message || 'Grade updated successfully');
+                loadGrades();
+            } else {
+                alert('Failed to update grade.');
+            }
+        }
+
+        async function deleteGrade(id) {
+            if (!confirm(`Delete grade record #${id}? This cannot be undone.`)) return;
+            const res = await fetchApi(`/grades/${id}`, 'DELETE');
+            if (res) {
+                alert(res.message || 'Grade deleted');
+                loadGrades();
+            } else {
+                alert('Failed to delete grade.');
+            }
+        }
+
+        async function assignGrade() {
+            const res = await fetchApi('/grades', 'POST', {
+                studentId: document.getElementById('grSid').value,
+                courseId: document.getElementById('grCid').value,
+                marks: document.getElementById('grMarks').value
+            });
+            if (res) {
+                alert(res.message || 'Grade saved successfully');
+                loadGrades(); // auto-reload table
+            } else {
+                alert('Failed to assign grade.');
+            }
+        }
+
+        // Logs
+        async function loadLogs() {
+            const data = await fetchApi('/system/logs');
+            if (!data) return;
+            const cont = document.getElementById('logsContainer');
+            cont.innerHTML = '';
+            data.reverse().forEach(l => {
+                cont.innerHTML += `<div class="log-entry"><div class="log-ts">${l.timestamp}</div><div class="log-event">${l.event}</div><div class="log-node">${l.node}</div></div>`;
+            });
+        }
+
+        // ─── Distributed Algorithms Monitor ─────────────────────────────
+        async function loadCluster() {
+            // 1. Leader Election + Lamport + Recovery
+            const leader = await fetchApi('/cluster/leader');
+            if (leader) {
+                document.getElementById('leaderDisplay').innerText = leader.currentLeader
+                    + (leader.isThisNodeLeader ? ' 👑 (this node)' : '');
+                document.getElementById('lamportDisplay').innerText = leader.lamportClock;
+                document.getElementById('recoveryDisplay').innerText = leader.recoveryStatus || '—';
+                const n2 = leader.node2Up;
+                const n3 = leader.node3Up;
+                document.getElementById('node2Status').innerHTML =
+                    n2 ? '<span style="color:#2ecc71">✅ UP</span>' : '<span style="color:#e74c3c">❌ DOWN (failover to Node1)</span>';
+                document.getElementById('node3Status').innerHTML =
+                    n3 ? '<span style="color:#2ecc71">✅ UP</span>' : '<span style="color:#e74c3c">❌ DOWN (failover to Node1)</span>';
+            }
+
+            // 2. Lock status
+            const lock = await fetchApi('/lock/status');
+            if (lock) {
+                document.getElementById('lockStatus').innerHTML = lock.locked
+                    ? `🔒 <b style="color:#e74c3c">LOCKED</b> — held by <b>${lock.holder}</b> | Lamport: ${lock.lamportClock}`
+                    : `🔓 <b style="color:#2ecc71">UNLOCKED</b> | Lamport: ${lock.lamportClock}`;
+            }
+        }
+
+        async function triggerSnapshot() {
+            document.getElementById('snapshotStatus').innerText = '⏳ Sending markers to all nodes...';
+            const result = await fetchApi('/snapshot/start', 'POST');
+            if (result) {
+                document.getElementById('snapshotStatus').innerText = '✅ Snapshot complete!';
+                document.getElementById('snapshotDisplay').style.display = 'block';
+                document.getElementById('snapshotDisplay').innerText = JSON.stringify(result, null, 2);
+            }
+        }
+
+        async function viewSnapshot() {
+            const result = await fetchApi('/snapshot/state');
+            if (result) {
+                document.getElementById('snapshotDisplay').style.display = 'block';
+                document.getElementById('snapshotDisplay').innerText = JSON.stringify(result, null, 2);
+                document.getElementById('snapshotStatus').innerText = '👁 Showing last snapshot';
+            }
+        }
+
+        async function acquireLock() {
+            const result = await fetchApi('/lock/acquire', 'POST');
+            if (result) { alert(result.message); loadCluster(); }
+        }
+
+        async function releaseLock() {
+            const result = await fetchApi('/lock/release', 'POST');
+            if (result) { alert(result.message); loadCluster(); }
+        }
+        // ─────────────────────────────────────────────────────────────────
+
+
+        // Health Monitor
+        async function loadHealth() {
+            const data = await fetchApi('/cluster/health');
+            if (!data) return;
+            const grid = document.getElementById('healthNodes');
+            grid.innerHTML = '';
+            data.nodes.forEach(n => {
+                const isFailed = n.status === 'FAILED';
+                grid.innerHTML += `<div class="node-box ${n.role === 'LEADER' ? 'leader' : ''} ${isFailed ? 'failed' : ''}">
+            <div class="node-name">${n.nodeId}</div>
+            <div class="node-role">${n.role}</div>
+            <div class="node-status ${isFailed ? 'red' : 'green'}">${n.status}</div>
+            <div style="font-size:10px; margin-top:5px; color:#556677">Last: ${n.lastHeartbeat}</div>
+        </div>`;
+            });
+        }
+        async function sendHeartbeat() { await fetchApi('/cluster/heartbeat', 'POST', { nodeId: document.getElementById('failNodeId').value }); loadHealth(); }
+        async function simulateFail() { await fetchApi('/cluster/simulate-failure', 'POST', { nodeId: document.getElementById('failNodeId').value }); loadHealth(); }
+
+        async function loadDashboard() {
+            if (currentUser && currentUser.role === 'STUDENT') {
+                const data = await fetchApi('/students/dashboard');
+                if (data) {
+                    document.getElementById('studentWelcome').innerText = 'Welcome ' + data.name;
+                    document.getElementById('sd-courses').innerText = data.totalCourses;
+                    if (data.noCoursesEnrolled) {
+                        document.getElementById('sd-attendance').innerText = 'N/A';
+                        document.getElementById('sd-attendance').title = 'No courses enrolled';
+                        // Update the card label to clarify
+                        const attendanceCard = document.getElementById('sd-attendance').closest('.stat-card');
+                        if (attendanceCard) {
+                            const label = attendanceCard.querySelector('.label');
+                            if (label) label.innerText = 'Attendance (No Courses)';
+                        }
+                    } else {
+                        document.getElementById('sd-attendance').innerText = data.attendancePercentage + '%';
+                    }
+                    document.getElementById('sd-quote').innerText = '"' + data.quote + '"';
+                }
+                return;
+            }
+            const metrics = await fetchApi('/cluster/metrics');
+            if (metrics) {
+                document.getElementById('ds-students').innerText = metrics.totalStudents;
+                document.getElementById('ds-courses').innerText = metrics.totalCourses;
+                document.getElementById('ds-nodes').innerText = metrics.activeNodes;
+                document.getElementById('ds-replicas').innerText = metrics.replicas;
+            }
+            const health = await fetchApi('/cluster/health');
+            if (health) {
+                document.getElementById('dashStatus').innerHTML = `Cluster Status: <b class="${health.clusterStatus === 'HEALTHY' ? 'green' : 'red'}">${health.clusterStatus}</b><br>Leader: <b>${health.leader}</b>`;
+            }
+        }
+
+        async function loadDropdowns() {
+            if (!currentUser) return;
+            const role = currentUser.role;
+
+            if (role === 'ADMIN') {
+                const students = await fetchApi('/students');
+                const courses = await fetchApi('/courses');
+
+                let stuOpts = '<option value="">Select Student...</option>';
+                if (students && Array.isArray(students)) students.forEach(s => stuOpts += `<option value="${s.id}">${s.id} - ${s.name}</option>`);
+
+                let crsOpts = '<option value="">Select Course...</option>';
+                if (courses && Array.isArray(courses)) courses.forEach(c => crsOpts += `<option value="${c.id}">${c.id} - ${c.courseName}</option>`);
+
+                ['enSid', 'attSid', 'grSid'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.innerHTML = stuOpts;
+                });
+                ['enCid', 'attCid', 'grCid'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.innerHTML = crsOpts;
+                });
+            } else if (role === 'FACULTY') {
+                const students = await fetchApi('/students/faculty-students');
+                const courses = await fetchApi('/courses');
+
+                let stuOpts = '<option value="">Select Student...</option>';
+                if (students && Array.isArray(students)) students.forEach(s => stuOpts += `<option value="${s.id}">${s.name}</option>`);
+
+                let crsOpts = '<option value="">Select Course...</option>';
+                if (courses && Array.isArray(courses)) courses.forEach(c => crsOpts += `<option value="${c.id}">${c.courseName}</option>`);
+
+                ['attSid', 'grSid'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.innerHTML = stuOpts;
+                });
+                ['attCid', 'grCid'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.innerHTML = crsOpts;
+                });
+            } else if (role === 'STUDENT') {
+                const availCourses = await fetchApi('/students/available-courses');
+                let availOpts = '<option value="">Select Course...</option>';
+                if (availCourses && Array.isArray(availCourses)) availCourses.forEach(c => availOpts += `<option value="${c.id}">${c.courseName}</option>`);
+                const el = document.getElementById('enCid');
+                if (el) el.innerHTML = availOpts;
+            }
+        }
+
+        // Init
+        window.onload = () => {
+            currentUser = JSON.parse(localStorage.getItem('authUser'));
+            if (!currentUser) window.location = 'login.html';
+            document.getElementById('headerUser').innerText = `👤 ${currentUser.username} (${currentUser.role})`;
+
+            applyRBAC();
+            loadDropdowns();
+            loadDashboard();
+
+            // Pre-load grades and attendance tables so they're populated when tab is opened
+            if (currentUser.role === 'FACULTY' || currentUser.role === 'ADMIN') {
+                loadGrades();
+                loadAttendance();
+            }
+        };
+    </script>
+</body>
+
+</html>
